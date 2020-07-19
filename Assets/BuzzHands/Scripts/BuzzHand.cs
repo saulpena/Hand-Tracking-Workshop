@@ -1,10 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BuzzHand : MonoBehaviour
 {
-    public GameObject spherePrefab;
+    public Transform spherePrefab;
+    public Ring ringPrefab;
 
     private OVRHand oVRHand;
     public OVRHand OVRHand
@@ -23,18 +25,58 @@ public class BuzzHand : MonoBehaviour
 
     private Transform thumbTip;
     private Transform indexTip;
+    private GameObject ringParent;
+
+    private GameObject midObject;
+
+    float previousDistance = -1f;
+
+    Coroutine showBonesCoroutine = null;
 
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(ShowBones());
+        //StartCoroutine(BuildRing());
+    }
+
+    private void Update()
+    {
+        if (showBonesCoroutine == null && oVRHand != null)
+        {
+            showBonesCoroutine = StartCoroutine(ShowBones());
+        }
+
+        if (ringParent == null && bones != null && bones.Count >= (int)OVRSkeleton.BoneId.Max)
+        {
+            ringParent = new GameObject("RingParent");
+            //ringParent.transform.SetParent(thumbTip.parent);
+            Ring ring = Ring.Instantiate(ringPrefab, ringParent.transform);
+            ring.BuildRing(.1f);
+        }
+
+        if (ringParent != null)
+        {
+            Vector3 midPoint = Vector3.Lerp(thumbTip.position, indexTip.position, .5f);
+            Quaternion rotation = Quaternion.Lerp(thumbTip.rotation, indexTip.rotation, 1);
+
+            //            Debug.Log("thumbTip.position=" + thumbTip.position.ToString() + ", midPoint=" + midPoint.ToString() + ", midPoint=" + midPoint.ToString() + ", indexTip.position=" + indexTip.position);
+            ringParent.transform.position = midPoint;
+            ringParent.transform.rotation = rotation;
+
+            if (midObject == null)
+            {
+                midObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                midObject.transform.localScale = new Vector3(.01f, .01f, .01f);
+            }
+            midObject.transform.position = midPoint;
+            midObject.transform.rotation = rotation;
+        }
     }
 
 
-    // Update is called once per frame
-    void xUpdate()
+    Vector3 Lerp(Vector3 start, Vector3 end, float percent)
     {
-
+        return (start + percent * (end - start));
     }
 
     IEnumerator ShowBones()
@@ -57,7 +99,7 @@ public class BuzzHand : MonoBehaviour
                         for (boneIndex = 0; boneIndex < bones.Count; boneIndex++)
                         {
                             OVRBone bone = bones[boneIndex];
-                            GameObject sphere = GameObject.Instantiate(spherePrefab, bone.Transform);
+                            Transform sphere = GameObject.Instantiate(spherePrefab, bone.Transform);
                             if (boneIndex >= (int)OVRSkeleton.BoneId.Hand_MaxSkinnable)
                             {
                                 sphere.GetComponent<Renderer>().material.color = Color.blue;
