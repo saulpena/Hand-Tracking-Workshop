@@ -25,11 +25,13 @@ public class BuzzHand : MonoBehaviour
 
     private Transform thumbTip;
     private Transform indexTip;
+    private Transform index1;
     private GameObject ringParent;
 
     private GameObject midObject;
 
-    float previousDistance = -1f;
+    float previousDiameter = -1f;
+    float diameterPct = .9f;
 
     Coroutine showBonesCoroutine = null;
 
@@ -46,30 +48,52 @@ public class BuzzHand : MonoBehaviour
             showBonesCoroutine = StartCoroutine(ShowBones());
         }
 
-        if (ringParent == null && bones != null && bones.Count >= (int)OVRSkeleton.BoneId.Max)
+        if (ringParent == null && oVRHand.GetFingerIsPinching(OVRHand.HandFinger.Index) && bones != null && bones.Count >= (int)OVRSkeleton.BoneId.Max)
         {
+            Transform indexTransform = bones[(int)OVRSkeleton.BoneId.Hand_Index1].Transform;
             ringParent = new GameObject("RingParent");
-            //ringParent.transform.SetParent(thumbTip.parent);
             Ring ring = Ring.Instantiate(ringPrefab, ringParent.transform);
-            ring.BuildRing(.1f);
+            float diameter = Vector3.Distance(thumbTip.position, indexTransform.position) * diameterPct;
+            ring.BuildRing(diameter * .5f);
+            previousDiameter = diameter;
         }
 
         if (ringParent != null)
         {
-            Vector3 midPoint = Vector3.Lerp(thumbTip.position, indexTip.position, .5f);
-            Quaternion rotation = Quaternion.Lerp(thumbTip.rotation, indexTip.rotation, 1);
+            float pinchIndexForce = oVRHand.GetFingerPinchStrength(OVRHand.HandFinger.Index);
+            OVRSkeleton.BoneId boneId = OVRSkeleton.BoneId.Hand_Index1;
 
-            //            Debug.Log("thumbTip.position=" + thumbTip.position.ToString() + ", midPoint=" + midPoint.ToString() + ", midPoint=" + midPoint.ToString() + ", indexTip.position=" + indexTip.position);
-            ringParent.transform.position = midPoint;
-            ringParent.transform.rotation = rotation;
-
-            if (midObject == null)
+            Debug.Log("pinchIndexForce=" + pinchIndexForce);
+            if (pinchIndexForce < .8f)
             {
-                midObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                midObject.transform.localScale = new Vector3(.01f, .01f, .01f);
+                boneId = OVRSkeleton.BoneId.Hand_Index2;
             }
-            midObject.transform.position = midPoint;
-            midObject.transform.rotation = rotation;
+            else if (pinchIndexForce < .6f)
+            {
+                boneId = OVRSkeleton.BoneId.Hand_Index3;
+            }
+            else if(pinchIndexForce < .4f)
+            {
+                boneId = OVRSkeleton.BoneId.Hand_IndexTip;
+            }
+            Transform indexTransform = bones[(int)boneId].Transform;
+
+
+            Vector3 indexPosition = indexTransform.position;
+            Vector3 midPoint = Vector3.Lerp(thumbTip.position, indexPosition, .5f);
+            //Quaternion rotation = Quaternion.Lerp(thumbTip.rotation, indexTip.rotation, 1);
+
+            float diameter = Vector3.Distance(thumbTip.position, indexPosition) * diameterPct;
+            ringParent.transform.localScale *= diameter / previousDiameter;
+            previousDiameter = diameter;
+
+            ringParent.transform.position = midPoint;
+
+            //Vector3 angles = indexTip.rotation.eulerAngles;
+            //float y = angles.y + 90.0f;
+
+            ringParent.transform.rotation = indexTip.rotation;// Quaternion.AngleAxis(y, Vector3.up);// indexTip.rotation;// oVRHand.transform.rotation;
+
         }
     }
 
@@ -94,16 +118,39 @@ public class BuzzHand : MonoBehaviour
                     {
                         thumbTip = bones[(int)OVRSkeleton.BoneId.Hand_ThumbTip].Transform;
                         indexTip = bones[(int)OVRSkeleton.BoneId.Hand_IndexTip].Transform;
+                        index1 = bones[(int)OVRSkeleton.BoneId.Hand_Index1].Transform;
 
                         int boneIndex;
                         for (boneIndex = 0; boneIndex < bones.Count; boneIndex++)
                         {
                             OVRBone bone = bones[boneIndex];
                             Transform sphere = GameObject.Instantiate(spherePrefab, bone.Transform);
+                            Color color = Color.cyan;
+                            switch(boneIndex)
+                            {
+                                case (int)OVRSkeleton.BoneId.Hand_Thumb0:
+                                    color = Color.green;
+                                    break;
+                                case (int)OVRSkeleton.BoneId.Hand_Index1:
+                                case (int)OVRSkeleton.BoneId.Hand_Thumb1:
+                                    color = Color.red;
+                                    break;
+                                case (int)OVRSkeleton.BoneId.Hand_Index2:
+                                case (int)OVRSkeleton.BoneId.Hand_Thumb2:
+                                    color = Color.white;
+                                    break;
+                                case (int)OVRSkeleton.BoneId.Hand_Index3:
+                                case (int)OVRSkeleton.BoneId.Hand_Thumb3:
+                                    color = Color.blue;
+                                    break;
+                            }
                             if (boneIndex >= (int)OVRSkeleton.BoneId.Hand_MaxSkinnable)
                             {
-                                sphere.GetComponent<Renderer>().material.color = Color.blue;
+                                color = Color.black;
                             }
+
+                            sphere.GetComponent<Renderer>().material.color = color;
+                         
                         }
                     }
                 }
