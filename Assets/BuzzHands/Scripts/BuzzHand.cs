@@ -63,16 +63,16 @@ public class BuzzHand : MonoBehaviour
             float pinchIndexForce = oVRHand.GetFingerPinchStrength(OVRHand.HandFinger.Index);
             OVRSkeleton.BoneId boneId = OVRSkeleton.BoneId.Hand_Index1;
 
-            Debug.Log("pinchIndexForce=" + pinchIndexForce);
-            if (pinchIndexForce < .8f)
+            //Debug.Log("pinchIndexForce=" + pinchIndexForce);
+            if (pinchIndexForce < .6f)
             {
                 boneId = OVRSkeleton.BoneId.Hand_Index2;
             }
-            else if (pinchIndexForce < .6f)
+            else if (pinchIndexForce < .4f)
             {
                 boneId = OVRSkeleton.BoneId.Hand_Index3;
             }
-            else if(pinchIndexForce < .4f)
+            else if(pinchIndexForce < .2f)
             {
                 boneId = OVRSkeleton.BoneId.Hand_IndexTip;
             }
