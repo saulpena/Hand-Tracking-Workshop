@@ -47,3 +47,5 @@ MonoBehaviour:
     type: 3}
   ringPrefab: {fileID: 128857516973750132, guid: 38d73377112eb3a41bcca2b1fa3c2b52,
     type: 3}
+  metalHandMaterial: {fileID: 2100000, guid: e1abc3f0590c1dc4bb75179e29c074e6, type: 2}
+  handMaterial: {fileID: 2100000, guid: 8f92ce6a2e9e04e458f46e6a635b1d62, type: 2}

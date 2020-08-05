@@ -7,6 +7,10 @@ public class BuzzHand : MonoBehaviour
 {
     public Transform spherePrefab;
     public Ring ringPrefab;
+    public Material metalHandMaterial;
+    public Material handMaterial;
+
+    SkinnedMeshRenderer skinnedMeshRenderer;
 
     private OVRHand oVRHand;
     public OVRHand OVRHand
@@ -18,6 +22,7 @@ public class BuzzHand : MonoBehaviour
         set
         {
             oVRHand = value;
+            skinnedMeshRenderer = oVRHand.GetComponent<SkinnedMeshRenderer>();
         }
     }
 
@@ -43,6 +48,21 @@ public class BuzzHand : MonoBehaviour
 
     private void Update()
     {
+        if (oVRHand.GetFingerIsPinching(OVRHand.HandFinger.Index))
+        {
+            if (skinnedMeshRenderer != null)
+            {
+                skinnedMeshRenderer.material = metalHandMaterial;
+            }
+        }
+        else
+        {
+            if (skinnedMeshRenderer != null)
+            {
+                skinnedMeshRenderer.material = handMaterial;
+            }
+        }
+        /*
         if (showBonesCoroutine == null && oVRHand != null)
         {
             showBonesCoroutine = StartCoroutine(ShowBones());
@@ -95,6 +115,7 @@ public class BuzzHand : MonoBehaviour
             ringParent.transform.rotation = indexTip.rotation;// Quaternion.AngleAxis(y, Vector3.up);// indexTip.rotation;// oVRHand.transform.rotation;
 
         }
+        */
     }
 
 
