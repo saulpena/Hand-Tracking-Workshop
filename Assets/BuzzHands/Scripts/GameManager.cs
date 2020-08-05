@@ -11,6 +11,9 @@ public class GameManager : MonoBehaviour
 
     public BuzzHand buzzHandPrefab;
 
+    public float electricBarSpeed = 1f;
+    public float electricBarSpeedMultiplier = 1f;
+
     void Awake()
     {
         if (instance == null)

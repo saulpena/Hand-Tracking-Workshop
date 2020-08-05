@@ -6,7 +6,9 @@ using UnityEngine;
 public class BuzzHand : MonoBehaviour
 {
     public Transform spherePrefab;
-    public Ring ringPrefab;
+    public RingTriggerArea ringTriggerAreaPrefab;
+
+    // public Ring ringPrefab;
     public Material metalHandMaterial;
     public Material handMaterial;
 
@@ -44,6 +46,7 @@ public class BuzzHand : MonoBehaviour
     void Start()
     {
         //StartCoroutine(BuildRing());
+        RingTriggerArea ringTriggerArea = RingTriggerArea.Instantiate(ringTriggerAreaPrefab);
     }
 
     private void Update()
